@@ -37,25 +37,24 @@ const enviarCorreoPrincipal = async (req, res) => {
 
 
 // Enviar correo desde cuenta secundaria (recibos de pago)
+
 const enviarCorreoSecundario = async (req, res) => {
   try {
-    const { to, type, subject, data } = req.body;
-
-    // Parsear data correctamente
-    const emailData = parseData(data);
+    const { to, type, subject, caseId, cliente } = req.body;
 
     const info = await sendEmail({
       to,
       type,
-      data: emailData,       // aquí van los datos del recibo
+      caseId,
+      data: { cliente }, // ya se pasa como objeto
       useAccount: 'second',
-      pdf: req.file || null, // PDF opcional
+      pdf: req.file || null,
       subject: subject || undefined
     });
 
     res.json({
       success: true,
-      message: `Correo enviado desde cuenta secundaria`,
+      message: 'Correo enviado desde cuenta secundaria',
       to: info.accepted,
       messageId: info.messageId
     });

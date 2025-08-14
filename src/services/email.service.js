@@ -16,12 +16,9 @@ async function sendEmail({ to, type, caseId, data, useAccount = 'main', pdf }) {
             subject = template.subject;
             html = template.html(data);
         } else if (type === 'recibo') {
-            subject = 'COMPROBANTE DE PAGO - NOTARIA TAMBINI';
-            html = reciboTemplates.envioReciboPago(
-                data.cliente,
-                data.monto,
-                data.fecha
-            );
+            const clienteNombre = data.cliente || 'Cliente';
+            subject = subject || 'COMPROBANTE DE PAGO - NOTARIA TAMBINI';
+            html = reciboTemplates.envioReciboPago(clienteNombre);
         } else {
             throw new Error(`Tipo de envío no reconocido: ${type}`);
         }
