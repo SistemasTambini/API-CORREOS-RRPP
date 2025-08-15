@@ -1,30 +1,65 @@
+// controllers/email.controller.js
 const { sendEmail } = require('../services/email.service');
 
 const parseData = (data) => {
   try {
-    return typeof data === 'string' ? JSON.parse(data) : data;
+    return typeof data === 'string' ? JSON.parse(data) : (data || {});
   } catch {
-    return data;
+    return {};
   }
 };
 
+// Normaliza archivos a un array: soporta fields, single y array
+function collectFiles(req) {
+  const files = [];
+
+  // Caso fields: { pdfs: [..], pdf: [..] }
+  if (req.files && !Array.isArray(req.files)) {
+    if (Array.isArray(req.files.pdfs)) files.push(...req.files.pdfs);
+    if (Array.isArray(req.files.pdf))  files.push(...req.files.pdf);
+  }
+
+  // Caso viejo: req.file (single)
+  if (req.file) files.push(req.file);
+
+  // Caso raro: req.files como array
+  if (Array.isArray(req.files)) files.push(...req.files);
+
+  return files;
+}
+
+// --- Cuenta principal ---
 const enviarCorreoPrincipal = async (req, res) => {
   try {
-    const { to, type, caseId, data } = req.body;
+    const { to, type, caseId, subject, cliente, data } = req.body;
+
+    if (!to || !type) {
+      return res.status(400).json({
+        success: false,
+        message: 'Campos requeridos: to, type'
+      });
+    }
+
+    const pdfs = collectFiles(req);
+
+    // Compatibilidad: si envías "cliente" plano lo envolvemos en data
+    const payloadData = cliente ? { cliente } : parseData(data);
 
     const info = await sendEmail({
       to,
       type,
       caseId,
-      data: parseData(data), // 🔹 Aseguramos que sea objeto
+      data: payloadData,
       useAccount: 'main',
-      pdf: req.file || null // El PDF opcional
+      subject: subject || undefined,
+      pdfs
     });
 
     res.json({
       success: true,
-      message: `Correo enviado desde cuenta principal`,
-      info
+      message: 'Correo enviado desde cuenta principal',
+      to: info.accepted,
+      messageId: info.messageId
     });
   } catch (error) {
     res.status(500).json({
@@ -35,21 +70,29 @@ const enviarCorreoPrincipal = async (req, res) => {
   }
 };
 
-
-// Enviar correo desde cuenta secundaria (recibos de pago)
-
+// --- Cuenta secundaria ---
 const enviarCorreoSecundario = async (req, res) => {
   try {
-    const { to, type, subject, caseId, cliente } = req.body;
+    const { to, type, subject, caseId, cliente, data } = req.body;
+
+    if (!to || !type) {
+      return res.status(400).json({
+        success: false,
+        message: 'Campos requeridos: to, type'
+      });
+    }
+
+    const pdfs = collectFiles(req);
+    const payloadData = cliente ? { cliente } : parseData(data);
 
     const info = await sendEmail({
       to,
       type,
       caseId,
-      data: { cliente }, // ya se pasa como objeto
+      data: payloadData,
       useAccount: 'second',
-      pdf: req.file || null,
-      subject: subject || undefined
+      subject: subject || undefined,
+      pdfs
     });
 
     res.json({
