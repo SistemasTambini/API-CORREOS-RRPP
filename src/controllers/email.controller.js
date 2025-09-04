@@ -9,29 +9,29 @@ const parseData = (data) => {
   }
 };
 
-// Normaliza archivos a un array: soporta fields, single y array
+// controllers/email.controller.js (solo esta parte)
 function collectFiles(req) {
-  const files = [];
+  const files = Array.isArray(req.files) ? req.files : [];
+  const numerados = [];  // pdfs[0], pdfs[1]...
+  const sinIndice = [];  // pdfs, pdfs[], pdf
 
-  // Caso fields: { pdfs: [..], pdf: [..] }
-  if (req.files && !Array.isArray(req.files)) {
-    if (Array.isArray(req.files.pdfs)) files.push(...req.files.pdfs);
-    if (Array.isArray(req.files.pdf))  files.push(...req.files.pdf);
+  for (const f of files) {
+    if (f.fieldname === 'pdf' || f.fieldname === 'pdfs' || f.fieldname === 'pdfs[]') {
+      sinIndice.push(f);
+    } else {
+      const m = f.fieldname.match(/^pdfs\[(\d+)\]$/);
+      if (m) numerados.push({ idx: parseInt(m[1],10), file: f });
+    }
   }
 
-  // Caso viejo: req.file (single)
-  if (req.file) files.push(req.file);
-
-  // Caso raro: req.files como array
-  if (Array.isArray(req.files)) files.push(...req.files);
-
-  return files;
+  numerados.sort((a,b) => a.idx - b.idx);
+  return [...numerados.map(x => x.file), ...sinIndice];
 }
 
 // --- Cuenta principal ---
 const enviarCorreoPrincipal = async (req, res) => {
   try {
-    const { to, type, caseId, subject, cliente, data } = req.body;
+    const { to, cc, type, caseId, subject, cliente, data } = req.body;
 
     if (!to || !type) {
       return res.status(400).json({
@@ -47,6 +47,7 @@ const enviarCorreoPrincipal = async (req, res) => {
 
     const info = await sendEmail({
       to,
+      cc, // 👉 se envía solo si viene en el body
       type,
       caseId,
       data: payloadData,

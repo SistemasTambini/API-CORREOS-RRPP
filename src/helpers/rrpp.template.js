@@ -1,32 +1,109 @@
 // helpers/rrpp.template.js
-const rrppTemplates = {
+const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
   1: {
     subject: 'COMUNICACIÓN POR TRÁMITE PRESENTADO',
-    html: ({ kardex, numeroTitulo }) => `
-      <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-        <p>Estimado(a) Señor(a):</p>
-        <p>
-          Me es grato saludarlo(a), y mediante el presente informarle que el trámite realizado en 
-          <strong>NOTARIA TAMBINI</strong>, bajo el <strong>Kardex N° ${kardex}</strong>, ha sido presentado a 
-          <strong>SUNARP</strong> bajo el número de título <strong>${numeroTitulo}</strong>.
-        </p>
-        <p>
-          Nuestro horario de atención es de:<br/>
-          Lunes a viernes de 8:00am a 6:00pm (horario corrido) - sábados de 9:00 am a 12:00 pm
-        </p>
-        <p style="font-weight: bold;">
-          No olvide recoger su testimonio dentro del horario de atención.
-        </p>
-        <p>
-          Agradecemos la confianza depositada en nosotros y quedamos a su entera disposición 
-          para cualquier trámite notarial adicional.
-        </p>
-        <p>Atentamente,</p>
-        <p><strong>NOTARIA TAMBINI</strong></p>
-      </div>
+    html: ({ kardex, numeroTitulo, oficinaRegistral }) => `
+      <!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Notaría Tambini – Trámite presentado</title>
+</head>
+<body style="margin:0;padding:0;background:#F5F7FB;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        
+        <!-- Card -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" 
+               style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:12px;overflow:hidden;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background:#03274A;padding:18px 24px;">
+              <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+                          font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
+                NOTARÍA TAMBINI
+              </div>
+            </td>
+          </tr>
+
+          <!-- Title -->
+          <tr>
+            <td style="padding:20px 24px 0 24px;">
+              <h1 style="margin:0 0 8px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+                         font-size:20px;line-height:1.3;color:#0F172A;">
+                Trámite presentado en SUNARP
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:0 24px 8px 24px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+                       font-size:14px;line-height:22px;color:#0F172A;">
+
+              <p style="margin:0 0 12px 0;">Estimado(a) Señor(a):</p>
+
+              <p style="margin:0 0 12px 0;">
+                Me es grato saludarlo(a), y mediante el presente informarle que el trámite realizado en 
+                <strong>NOTARÍA TAMBINI</strong>, bajo el 
+                <strong>Kárdex N.º ${kardex}</strong>, ha sido presentado a 
+                <strong>SUNARP</strong> bajo el número de título 
+                <strong>${numeroTitulo}</strong> en la Oficina Registral de
+				<strong>${oficinaRegistral}</strong>.
+              </p>
+
+              <!-- Horario -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" 
+                     style="margin:0 0 16px 0;">
+                <tr>
+                  <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:8px;background:#F8FAFC;">
+                    <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#0F172A;">Horario de atención</p>
+                    <p style="margin:0;font-size:13px;line-height:20px;color:#0F172A;">
+                      Lunes a viernes: 8:00 a. m. – 6:00 p. m. (horario corrido)<br/>
+                      Sábados: 9:00 a. m. – 12:00 p. m.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 12px 0;font-weight:600;">
+                No olvide recoger su testimonio dentro del horario de atención.
+              </p>
+
+              <p style="margin:0 0 12px 0;">
+                Agradecemos la confianza depositada en nosotros y quedamos a su entera disposición para cualquier trámite notarial adicional.
+              </p>
+
+              <p style="margin:0 0 6px 0;">Atentamente,</p>
+              <p style="margin:0;font-weight:700;color:#0F4C81;">NOTARÍA TAMBINI</p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
+              <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+                        font-size:12px;color:#64748B;">
+                Este mensaje fue enviado automáticamente. Si recibió este correo por error, por favor ignórelo.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Card -->
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+
     `
   },
-  // 2. Trámite inscrito con devolución
+  // 2. Trámite inscrito con devolución VARIABLES(kardex,numeroTitulo,numeroDevolucion)
   2: {
     subject: 'COMUNICACIÓN POR TRÁMITE INSCRITO CON DEVOLUCIÓN',
     html: (data) => `
@@ -185,7 +262,7 @@ const rrppTemplates = {
     `
   },
 
-  // 3. Trámite inscrito
+  // 3. Trámite inscrito -  VARIABLES(kardex,numeroTitulo)
   3: {
     subject: 'COMUNICACIÓN POR TRÁMITE INSCRITO',
     html: (data) => `
@@ -205,7 +282,7 @@ const rrppTemplates = {
           
           <!-- Header -->
           <tr>
-            <td style="background:#0F4C81;padding:18px 24px;">
+            <td style="background:#03274A;padding:18px 24px;">
               <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
                 NOTARÍA TAMBINI
               </div>
@@ -241,16 +318,16 @@ const rrppTemplates = {
               </p>
 
               <p style="margin:0 0 12px 0;">
-                No olvide recoger su testimonio dentro del horario de atención. Contamos con el servicio de entrega de documentos a domicilio con tarifa especial; escríbanos al WhatsApp 
-                <a href="https://wa.me/51977806351" style="color:#0F4C81;text-decoration:none;">977 806 351</a>.
+                No olvide recoger su testimonio dentro del horario de atención. Contamos con el servicio de entrega de documentos a domicilio con tarifa especial.
+                
               </p>
 
               <!-- CTA WhatsApp -->
               <p style="margin:0 0 16px 0;">
                 <a href="https://wa.me/51977806351"
-                   style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;font-size:14px;font-weight:600;padding:10px 16px;border-radius:8px;">
-                   Escribir por WhatsApp
-                </a>
+                       style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;padding:10px 16px;border-radius:8px;">
+                       Escribir por WhatsApp (977 806 351)
+                    </a>
               </p>
 
               <!-- Horario -->
@@ -291,10 +368,11 @@ const rrppTemplates = {
 </body>
 </html>
 
+
     `
   },
 
-  // 4. Trámite inscrito con devolución (constitución empresa)
+  // 4. Trámite inscrito con devolución (constitución empresa) - VARIABLE(kardex,montoDevolucion)
   4: {
     subject: 'COMUNICACIÓN POR TRÁMITE INSCRITO CON DEVOLUCIÓN (CONSTITUCIÓN DE EMPRESA)',
     html: (data) => `
@@ -324,7 +402,7 @@ const rrppTemplates = {
           
           <!-- Header -->
           <tr>
-            <td style="background:#03274A;padding:18px 24px;">
+            <td style="background:#0F172A;padding:18px 24px;">
               <!-- Reemplaza por <img> si tienes logo -->
               <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
                 NOTARÍA TAMBINI
@@ -440,7 +518,7 @@ const rrppTemplates = {
     `
   },
 
-  // 5. Trámite inscrito (constitución empresa)
+  // 5. Trámite inscrito (constitución empresa) - variables (kardex)
   5: {
     subject: 'COMUNICACIÓN POR TRÁMITE INSCRITO (CONSTITUCIÓN DE EMPRESA)',
     html: (data) => `
@@ -471,7 +549,7 @@ const rrppTemplates = {
           
           <!-- Header -->
           <tr>
-            <td style="background:#03274A;padding:18px 24px;">
+            <td style="background:#0F172A;padding:18px 24px;">
               <!-- Reemplaza por <img> si tienes logo -->
               <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
                 NOTARÍA TAMBINI
@@ -585,7 +663,7 @@ const rrppTemplates = {
     `
   },
 
-  // 6. Trámite liquidado
+  // 6. Trámite liquidado - variables(kardex,numerotitulo,montoDevolucion)
   6: {
     subject: 'COMUNICACIÓN POR TRÁMITE LIQUIDADO',
     html: (data) => `
@@ -607,7 +685,7 @@ const rrppTemplates = {
           
           <!-- Header -->
           <tr>
-            <td style="background:#0F4C81;padding:18px 24px;">
+            <td style="background:#0F172A;padding:18px 24px;">
               <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
                 NOTARÍA TAMBINI
               </div>
@@ -635,7 +713,7 @@ const rrppTemplates = {
                 <strong>${data.kardex || '……'}</strong> N.º 
                 <strong>${data.numeroTitulo || '………….'}</strong>, se encuentra 
                 <strong style="color:#15803D;">LIQUIDADO</strong>, siendo el monto del mayor derecho de 
-                <strong>S/. ${data.monto || '0.00'}</strong>, por lo que ponemos a su disposición las cuentas de derechos registrales de NOTARÍA TAMBINI:
+                <strong>S/. ${data.montoDevolucion || '0.00'}</strong>, por lo que ponemos a su disposición las cuentas de derechos registrales de NOTARÍA TAMBINI:
               </p>
 
               <!-- Resumen -->
@@ -648,7 +726,7 @@ const rrppTemplates = {
                     </p>
                     <p style="margin:0;font-size:14px;color:#0F172A;">
                       Kárdex: <strong>${data.kardex || '……'}</strong> &nbsp;|&nbsp; Título N.º <strong>${data.numeroTitulo || '………….'}</strong><br/>
-                      Mayor derecho: <strong>S/. ${data.monto || '0.00'}</strong>
+                      Mayor derecho: <strong>S/. ${data.montoDevolucion || '0.00'}</strong>
                     </p>
                   </td>
                 </tr>
@@ -739,7 +817,7 @@ const rrppTemplates = {
     `
   },
 
-  // 7. Trámite observado
+  // 7. Trámite observado - variables (kardex,numeroTitulo)
   7: {
     subject: 'COMUNICACIÓN POR TRÁMITE OBSERVADO',
     html: (data) => `
@@ -761,7 +839,7 @@ const rrppTemplates = {
           
           <!-- Header -->
           <tr>
-            <td style="background:#0F4C81;padding:18px 24px;">
+            <td style="background:#0F172A;padding:18px 24px;">
               <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
                           font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
                 NOTARÍA TAMBINI
@@ -790,8 +868,8 @@ const rrppTemplates = {
                 Me es grato saludarlo(a) y mediante el presente informarle que el trámite realizado en 
                 <strong>NOTARÍA TAMBINI</strong>, bajo el 
                 <strong>N.º  ${data.kardex || '……'}</strong> 
-               N.º , del cual se ha solicitado la inscripción registral ante <strong>SUNARP</strong>, con N.º de Título 
-                <strong>${data.numeroTituloSunarp || '………'}</strong>, se encuentra 
+               , del cual se ha solicitado la inscripción registral ante <strong>SUNARP</strong>, con N.º de Título 
+                <strong>${data.numeroTitulo || '………'}</strong>, se encuentra 
                 <strong style="color:#B45309;">OBSERVADO</strong>, por motivos señalados en la esquela adjunta.
               </p>
 
@@ -848,7 +926,7 @@ const rrppTemplates = {
     `
   },
 
-  // 8. Trámite tachado
+  // 8. Trámite tachado - variables (kardex,numeroTitulo)
   8: {
     subject: 'COMUNICACIÓN POR TRÁMITE TACHADO',
     html: (data) => `
@@ -870,7 +948,7 @@ const rrppTemplates = {
           
           <!-- Header -->
           <tr>
-            <td style="background:#0F4C81;padding:18px 24px;">
+            <td style="background:#0F172A;padding:18px 24px;">
               <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
                           font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
                 NOTARÍA TAMBINI
@@ -900,7 +978,7 @@ const rrppTemplates = {
                 <strong>NOTARÍA TAMBINI</strong>, bajo el 
                 <strong>N.º  ${data.kardex || '……'}</strong> 
                 del cual se ha solicitado la inscripción registral ante <strong>SUNARP</strong>, con N.º de Título 
-                <strong>${data.numeroTituloSunarp || '……….'}</strong>, se encuentra 
+                <strong>${data.numeroTitulo || '……….'}</strong>, se encuentra 
                 <strong style="color:#D9534F;">TACHADO</strong>, por motivos señalados en la esquela adjunta.
               </p>
 
@@ -949,8 +1027,112 @@ const rrppTemplates = {
   </table>
 </body>
 </html>
-
     `
+    
+  },
+   // 9. Trámite generico - variables (kardex,numeroTitulo,estado)
+  9: {
+    subject: 'COMUNICACIÓN POR TRÁMITE EN RR.PP.',
+    html: (data) => `
+      <!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Notaría Tambini – Trámite ${data.estado || '……'}</title>
+</head>
+<body style="margin:0;padding:0;background:#F5F7FB;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        
+        <!-- Card -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" 
+               style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:12px;overflow:hidden;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background:#0F172A;padding:18px 24px;">
+              <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+                          font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
+                NOTARÍA TAMBINI
+              </div>
+            </td>
+          </tr>
+
+          <!-- Title -->
+          <tr>
+            <td style="padding:20px 24px 0 24px;">
+              <h1 style="margin:0 0 8px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+                         font-size:20px;line-height:1.3;color:#0F172A;">
+                Trámite ${data.estado || '……'}
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:0 24px 8px 24px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+                       font-size:14px;line-height:22px;color:#0F172A;">
+
+              <p style="margin:0 0 12px 0;">Estimado(a) Señor(a):</p>
+
+              <p style="margin:0 0 12px 0;">
+                Me es grato saludarlo(a) y mediante el presente informarle que el trámite realizado en 
+                <strong>NOTARÍA TAMBINI</strong>, bajo el 
+                <strong>N.º  ${data.kardex || '……'}</strong> 
+                del cual se ha solicitado la inscripción registral ante <strong>SUNARP</strong>, con N.º de Título 
+                <strong>${data.numeroTitulo || '……….'}</strong>, se encuentra en la etapa
+                <strong style="color:black;">${data.estado || '……'}</strong>.
+              </p>
+
+              <p style="margin:0 0 12px 0;">
+                En caso de cualquier consulta, le agradeceremos comunicarse con el asesor legal que atendió su trámite.
+              </p>
+
+              <!-- Horario -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" 
+                     style="margin:0 0 16px 0;">
+                <tr>
+                  <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:8px;background:#F8FAFC;">
+                    <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#0F172A;">Horario de atención</p>
+                    <p style="margin:0;font-size:13px;line-height:20px;color:#0F172A;">
+                      Lunes a viernes: 8:00 a. m. – 6:00 p. m. (horario corrido)<br/>
+                      Sábados: 9:00 a. m. – 12:00 p. m.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 12px 0;">
+                Agradecemos la confianza depositada en nosotros y quedamos a su entera disposición para cualquier trámite notarial adicional.
+              </p>
+
+              <p style="margin:0 0 6px 0;">Atentamente,</p>
+              <p style="margin:0;font-weight:700;color:#0F4C81;">NOTARÍA TAMBINI</p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
+              <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+                        font-size:12px;color:#64748B;">
+                Este mensaje fue enviado automáticamente. Si recibió este correo por error, por favor ignórelo.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Card -->
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `
+    
   }
 };
 
