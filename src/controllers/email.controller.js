@@ -1,5 +1,7 @@
 // controllers/email.controller.js
 const { sendEmail } = require('../services/email.service');
+const EmailLogRp = require('../models/EmailLogRp');
+const { Op } = require('sequelize');
 
 const parseData = (data) => {
   try {
@@ -111,4 +113,61 @@ const enviarCorreoSecundario = async (req, res) => {
   }
 };
 
-module.exports = { enviarCorreoPrincipal, enviarCorreoSecundario };
+// ✅ Listar todos los logs (ordenados por fecha descendente)
+const listarLogs = async (req, res) => {
+  try {
+    const logs = await EmailLogRp.findAll({
+      order: [['fechaCreacion', 'DESC']]
+    });
+    res.json({
+      success: true,
+      total: logs.length,
+      data: logs
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error obteniendo logs',
+      error: error.message
+    });
+  }
+};
+
+// ✅ Buscar logs con filtros (opcional)
+const buscarLogs = async (req, res) => {
+  try {
+    const { destinatario, estado, desde, hasta } = req.query;
+    const where = {};
+
+    if (destinatario) where.destinatario = destinatario;
+    if (estado) where.estado = estado;
+
+    if (desde && hasta) {
+      const startDate = new Date(`${desde}T00:00:00-05:00`); // inicio día en Lima
+      const endDate = new Date(`${hasta}T23:59:59-05:00`);   // fin día en Lima
+
+      where.fechaCreacion = {
+        [Op.between]: [startDate, endDate]
+      };
+    }
+
+    const logs = await EmailLogRp.findAll({
+      where,
+      order: [['fechaCreacion', 'DESC']]
+    });
+
+    res.json({
+      success: true,
+      total: logs.length,
+      data: logs
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error filtrando logs',
+      error: error.message
+    });
+  }
+};
+
+module.exports = { enviarCorreoPrincipal, enviarCorreoSecundario, buscarLogs , listarLogs};

@@ -3,6 +3,7 @@ const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const { enviarCorreoPrincipal, enviarCorreoSecundario } = require('../controllers/email.controller');
+const { listarLogs, buscarLogs } = require('../controllers/email.controller');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -31,5 +32,11 @@ function validarCamposPDF(req, res, next) {
 
 router.post('/send-main',   upload.any(), validarCamposPDF, enviarCorreoPrincipal);
 router.post('/send-second', upload.any(), validarCamposPDF, enviarCorreoSecundario);
+// GET /api/logs → devuelve todos los registros
+router.get('/logs', listarLogs);
+
+// GET /api/logs/search?destinatario=correo@test.com&estado=SENT&desde=2025-09-01&hasta=2025-09-26
+router.get('/logs/search', buscarLogs);
+
 
 module.exports = router;

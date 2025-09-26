@@ -1,7 +1,7 @@
 // helpers/rrpp.template.js
 const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
   1: {
-    subject: 'COMUNICACIÓN POR TRÁMITE PRESENTADO',
+    subject: (data) => `COMUNICACIÓN POR TRÁMITE PRESENTADO - ${data.kardex || ''}`,
     html: ({ kardex, numeroTitulo, oficinaRegistral }) => `
       <!DOCTYPE html>
 <html lang="es">
@@ -105,7 +105,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
   },
   // 2. Trámite inscrito con devolución VARIABLES(kardex,numeroTitulo,numeroDevolucion)
   2: {
-    subject: 'COMUNICACIÓN POR TRÁMITE INSCRITO CON DEVOLUCIÓN',
+    subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO CON DEVOLUCIÓN - ${data.kardex || ''}`,
     html: (data) => `
   <!DOCTYPE html>
 <html lang="es">
@@ -264,7 +264,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 
   // 3. Trámite inscrito -  VARIABLES(kardex,numeroTitulo)
   3: {
-    subject: 'COMUNICACIÓN POR TRÁMITE INSCRITO',
+    subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO - ${data.kardex || ''}`,
     html: (data) => `
       <!DOCTYPE html>
 <html lang="es">
@@ -374,7 +374,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 
   // 4. Trámite inscrito con devolución (constitución empresa) - VARIABLE(kardex,montoDevolucion)
   4: {
-    subject: 'COMUNICACIÓN POR TRÁMITE INSCRITO CON DEVOLUCIÓN (CONSTITUCIÓN DE EMPRESA)',
+    subject: (data) =>  `COMUNICACIÓN POR TRÁMITE INSCRITO CON DEVOLUCIÓN (CONSTITUCIÓN DE EMPRESA) - ${data.kardex || ''}`,
     html: (data) => `
 <!DOCTYPE html>
 <html lang="es">
@@ -520,7 +520,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 
   // 5. Trámite inscrito (constitución empresa) - variables (kardex)
   5: {
-    subject: 'COMUNICACIÓN POR TRÁMITE INSCRITO (CONSTITUCIÓN DE EMPRESA)',
+    subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO (CONSTITUCIÓN DE EMPRESA) - ${data.kardex || ''}`,
     html: (data) => `
 <!-- EN PRUEBA-->
 <!DOCTYPE html>
@@ -665,7 +665,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 
   // 6. Trámite liquidado - variables(kardex,numerotitulo,montoDevolucion)
   6: {
-    subject: 'COMUNICACIÓN POR TRÁMITE LIQUIDADO',
+    subject: (data) => `COMUNICACIÓN POR TRÁMITE LIQUIDADO - ${data.kardex || ''}`,
     html: (data) => `
       <!DOCTYPE html>
 <html lang="es">
@@ -819,7 +819,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 
   // 7. Trámite observado - variables (kardex,numeroTitulo)
   7: {
-    subject: 'COMUNICACIÓN POR TRÁMITE OBSERVADO',
+    subject: (data) => `COMUNICACIÓN POR TRÁMITE OBSERVADO - ${data.kardex || ''}`,
     html: (data) => `
       <!DOCTYPE html>
 <html lang="es">
@@ -868,9 +868,11 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 Me es grato saludarlo(a) y mediante el presente informarle que el trámite realizado en 
                 <strong>NOTARÍA TAMBINI</strong>, bajo el 
                 <strong>N.º  ${data.kardex || '……'}</strong> 
-               , del cual se ha solicitado la inscripción registral ante <strong>SUNARP</strong>, con N.º de Título 
+                , del cual se ha solicitado la inscripción registral ante <strong>SUNARP</strong>, con N.º de Título 
                 <strong>${data.numeroTitulo || '………'}</strong>, se encuentra 
                 <strong style="color:#B45309;">OBSERVADO</strong>, por motivos señalados en la esquela adjunta.
+                Tiene derechos pendiente de pago de 
+                <strong>S/ ${data.montoDevolucion || '0.00'}</strong>.
               </p>
 
               <p style="margin:0 0 16px 0;">
@@ -928,7 +930,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 
   // 8. Trámite tachado - variables (kardex,numeroTitulo)
   8: {
-    subject: 'COMUNICACIÓN POR TRÁMITE TACHADO',
+    subject: (data) => `COMUNICACIÓN POR TRÁMITE TACHADO - ${data.kardex || ''}`,
     html: (data) => `
       <!DOCTYPE html>
 <html lang="es">
@@ -1028,11 +1030,11 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 </body>
 </html>
     `
-    
+
   },
-   // 9. Trámite generico - variables (kardex,numeroTitulo,estado)
+  // 9. Trámite generico - variables (kardex,numeroTitulo,estado)
   9: {
-    subject: 'COMUNICACIÓN POR TRÁMITE EN RR.PP.',
+    subject: (data) => `COMUNICACIÓN POR TRÁMITE EN RR.PP. - - ${data.kardex || ''}`,
     html: (data) => `
       <!DOCTYPE html>
 <html lang="es">
@@ -1132,7 +1134,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 </body>
 </html>
     `
-    
+
   }
 };
 
