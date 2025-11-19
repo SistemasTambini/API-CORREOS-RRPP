@@ -1135,6 +1135,113 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 </html>
     `
 
+  },
+  
+  // 10. CASO SIMILAR AL 3. PERO PARA LOS V,N,L Y C 
+  10: {
+    subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO - ${data.kardex || ''}`,
+    html: (data) => `
+      <!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Notaría Tambini – Trámite inscrito</title>
+</head>
+<body style="margin:0;padding:0;background:#F5F7FB;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <!-- Card -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:12px;overflow:hidden;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background:#03274A;padding:18px 24px;">
+              <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
+                NOTARÍA TAMBINI
+              </div>
+            </td>
+          </tr>
+
+          <!-- Title + meta -->
+          <tr>
+            <td style="padding:20px 24px 0 24px;">
+              <h1 style="margin:0 0:8px 0;margin-bottom:8px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:20px;line-height:1.3;color:#0F172A;">
+                Trámite inscrito
+              </h1>
+              <p style="margin:0 0 12px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
+                Kárdex: <strong style="color:#0F172A;">${data.kardex || '.............................'}</strong>
+                &nbsp;|&nbsp;
+                Título N.º <strong style="color:#0F172A;">${data.numeroTitulo || '.............................'}</strong>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:0 24px 8px 24px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
+
+              <p style="margin:0 0 12px 0;">Estimado(a) Señor(a):</p>
+
+              <p style="margin:0 0 12px 0;">
+                Me es grato saludarlo(a), y mediante el presente informarle que el trámite realizado en 
+                <strong>NOTARÍA TAMBINI</strong>, bajo el 
+                <strong>${data.kardex || '.............................'}</strong> N.º 
+                <strong>${data.numeroTitulo || '...........................................'}</strong>, 
+                se encuentra <strong>INSCRITO</strong>.
+              </p>
+
+ 
+              </p>
+
+              <!-- CTA WhatsApp -->
+              <p style="margin:0 0 16px 0;">
+                <a href="https://wa.me/51977806351"
+                       style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;padding:10px 16px;border-radius:8px;">
+                       Escribir por WhatsApp (977 806 351)
+                    </a>
+              </p>
+
+              <!-- Horario -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px 0;">
+                <tr>
+                  <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:8px;background:#F8FAFC;">
+                    <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#0F172A;">Horario de atención</p>
+                    <p style="margin:0;font-size:13px;line-height:20px;color:#0F172A;">
+                      Lunes a viernes: 8:00 a. m. – 6:00 p. m. (horario corrido)<br />
+                      Sábados: 9:00 a. m. – 12:00 p. m.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 12px 0;">
+                Agradecemos la confianza depositada en nosotros y quedamos a su entera disposición para cualquier trámite notarial adicional.
+              </p>
+
+              <p style="margin:0 0 6px 0;">Atentamente,</p>
+              <p style="margin:0;font-weight:700;color:#0F4C81;">NOTARÍA TAMBINI</p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
+              <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
+                Este mensaje fue enviado automáticamente. Si recibió este correo por error, por favor ignórelo.
+              </p>
+            </td>
+          </tr>
+        </table>
+        <!-- /Card -->
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `
+
   }
 };
 
