@@ -1,9 +1,21 @@
-// helpers/rrpp.template.js
+
+// helper local opcional si lo quieres reutilizar
+function shouldShowTestimonio(kardex) {
+  const first = (kardex || '').toString().trim().charAt(0).toUpperCase();
+  return first === 'K';
+}
+
+
 const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
+  // 1. Trámite presentado VARIABLES(kardex,numeroTitulo,oficinaRegistral)
   1: {
-    subject: (data) => `COMUNICACIÓN POR TRÁMITE PRESENTADO - ${data.kardex || ''}`,
-    html: ({ kardex, numeroTitulo, oficinaRegistral }) => `
-      <!DOCTYPE html>
+    subject: (data) =>
+      `COMUNICACIÓN POR TRÁMITE PRESENTADO - ${data.kardex || ''}`,
+    html: ({ kardex, numeroTitulo, oficinaRegistral }) => {
+      const showTestimonio = shouldShowTestimonio(kardex);
+
+      return `
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
@@ -14,11 +26,11 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
     <tr>
       <td align="center" style="padding:24px 12px;">
-        
+
         <!-- Card -->
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" 
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640"
                style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:12px;overflow:hidden;">
-          
+
           <!-- Header -->
           <tr>
             <td style="background:#03274A;padding:18px 24px;">
@@ -47,16 +59,14 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
               <p style="margin:0 0 12px 0;">Estimado(a) Señor(a):</p>
 
               <p style="margin:0 0 12px 0;">
-                Me es grato saludarlo(a), y mediante el presente informarle que el trámite realizado en 
-                <strong>NOTARÍA TAMBINI</strong>, bajo el 
-                <strong>Kárdex N.º ${kardex}</strong>, ha sido presentado a 
-                <strong>SUNARP</strong> bajo el número de título 
-                <strong>${numeroTitulo}</strong> en la Oficina Registral de
-				<strong>${oficinaRegistral}</strong>.
+                Le informamos que el trámite realizado en <strong>NOTARÍA TAMBINI</strong>, bajo el 
+                <strong>Kárdex N.º ${kardex}</strong>, ha sido presentado ante <strong>SUNARP</strong> con el 
+                <strong>Título N.º ${numeroTitulo}</strong>, en la Oficina Registral de 
+                <strong>${oficinaRegistral}</strong>.
               </p>
 
               <!-- Horario -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" 
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
                      style="margin:0 0 16px 0;">
                 <tr>
                   <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:8px;background:#F8FAFC;">
@@ -69,13 +79,33 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 </tr>
               </table>
 
-              <p style="margin:0 0 12px 0;font-weight:600;">
-                No olvide recoger su testimonio dentro del horario de atención.
+              ${showTestimonio ? `
+              <p class="testimonio" style="margin:0 0 12px 0;font-weight:700;">
+                Por favor, recuerde recoger su testimonio únicamente dentro del horario de atención.
               </p>
+              ` : ''}
 
               <p style="margin:0 0 12px 0;">
-                Agradecemos la confianza depositada en nosotros y quedamos a su entera disposición para cualquier trámite notarial adicional.
+                Agradecemos la confianza depositada en nosotros y quedamos a su disposición para cualquier trámite notarial adicional.
               </p>
+
+              <p style="margin:0 0 14px 0;">
+                Para consultar el estado de su trámite en línea, haga clic en el siguiente botón:
+              </p>
+
+              <!-- CTA Button -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px 0;">
+                <tr>
+                  <td align="left">
+                    <a href="https://consultas.notariatambini.com/otros-clientes.php" target="_blank"
+                       style="display:inline-block;padding:10px 22px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+                              font-size:14px;font-weight:600;text-decoration:none;background:#03274A;
+                              color:#FFFFFF;border-radius:6px;">
+                      Consulta Web Tambini
+                    </a>
+                  </td>
+                </tr>
+              </table>
 
               <p style="margin:0 0 6px 0;">Atentamente,</p>
               <p style="margin:0;font-weight:700;color:#0F4C81;">NOTARÍA TAMBINI</p>
@@ -100,9 +130,10 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
   </table>
 </body>
 </html>
-
-    `
+      `;
+    }
   },
+
   // 2. Trámite inscrito con devolución VARIABLES(kardex,numeroTitulo,numeroDevolucion)
   2: {
     subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO CON DEVOLUCIÓN - ${data.kardex || ''}`,
@@ -184,7 +215,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 </tr>
               </table>
 
-              <p style="margin:0 0 16px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
+              <p class="testimonio" style="margin:0 0 16px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
                 No olvide recoger su testimonio dentro del horario de atención. Contamos con servicio de
                 entrega de documentos a domicilio con tarifa especial.
               </p>
@@ -317,7 +348,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 se encuentra <strong>INSCRITO</strong>.
               </p>
 
-              <p style="margin:0 0 12px 0;">
+              <p class="testimonio" style="margin:0 0 12px 0;">
                 No olvide recoger su testimonio dentro del horario de atención. Contamos con el servicio de entrega de documentos a domicilio con tarifa especial.
                 
               </p>
@@ -447,8 +478,8 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 </tr>
               </table>
 
-              <p style="margin:0 0 16px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
-                No olvide recoger su testimonio dentro del horario de atención. En caso de requerir Testimonio digital.
+              <p class="testimonio" style="margin:0 0 16px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
+                No olvide recoger su testimonio dentro del horario de atención.
               </p>
 
               <!-- CTA (botón bulletproof con VML para Outlook) -->
@@ -592,8 +623,8 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 </tr>
               </table>
 
-              <p style="margin:0 0 16px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
-                No olvide recoger su testimonio dentro del horario de atención. En caso de requerir Testimonio digital.
+              <p class="testimonio" style="margin:0 0 16px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
+                No olvide recoger su testimonio dentro del horario de atención.
               </p>
 
               <!-- CTA (botón bulletproof con VML para Outlook) -->
@@ -1136,7 +1167,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
     `
 
   },
-  
+
   // 10. CASO SIMILAR AL 3. PERO PARA LOS V,N,L Y C 
   10: {
     subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO - ${data.kardex || ''}`,
