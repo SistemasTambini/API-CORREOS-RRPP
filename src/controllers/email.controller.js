@@ -1,4 +1,3 @@
-// controllers/email.controller.js
 const { sendEmail } = require('../services/email.service');
 const EmailLogRp = require('../models/EmailLogRp');
 const { Op } = require('sequelize');
@@ -11,7 +10,6 @@ const parseData = (data) => {
   }
 };
 
-// controllers/email.controller.js (solo esta parte)
 function collectFiles(req) {
   const files = Array.isArray(req.files) ? req.files : [];
   const numerados = [];  // pdfs[0], pdfs[1]...
@@ -22,11 +20,11 @@ function collectFiles(req) {
       sinIndice.push(f);
     } else {
       const m = f.fieldname.match(/^pdfs\[(\d+)\]$/);
-      if (m) numerados.push({ idx: parseInt(m[1],10), file: f });
+      if (m) numerados.push({ idx: parseInt(m[1], 10), file: f });
     }
   }
 
-  numerados.sort((a,b) => a.idx - b.idx);
+  numerados.sort((a, b) => a.idx - b.idx);
   return [...numerados.map(x => x.file), ...sinIndice];
 }
 
@@ -47,9 +45,9 @@ const enviarCorreoPrincipal = async (req, res) => {
     // Compatibilidad: si envías "cliente" plano lo envolvemos en data
     const payloadData = cliente ? { cliente } : parseData(data);
 
-    const info = await sendEmail({
+    const result = await sendEmail({
       to,
-      cc, // 👉 se envía solo si viene en el body
+      cc,
       type,
       caseId,
       data: payloadData,
@@ -58,14 +56,16 @@ const enviarCorreoPrincipal = async (req, res) => {
       pdfs
     });
 
-    res.json({
+    return res.json({
       success: true,
-      message: 'Correo enviado desde cuenta principal',
-      to: info.accepted,
-      messageId: info.messageId
+      message: result.logSaved
+        ? 'Correo enviado desde cuenta principal'
+        : 'Correo enviado desde cuenta principal, pero no se pudo registrar el log',
+      to: result.info.accepted,
+      messageId: result.info.messageId
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error enviando correo desde cuenta principal',
       error: error.message
@@ -88,7 +88,7 @@ const enviarCorreoSecundario = async (req, res) => {
     const pdfs = collectFiles(req);
     const payloadData = cliente ? { cliente } : parseData(data);
 
-    const info = await sendEmail({
+    const result = await sendEmail({
       to,
       type,
       caseId,
@@ -98,14 +98,16 @@ const enviarCorreoSecundario = async (req, res) => {
       pdfs
     });
 
-    res.json({
+    return res.json({
       success: true,
-      message: 'Correo enviado desde cuenta secundaria',
-      to: info.accepted,
-      messageId: info.messageId
+      message: result.logSaved
+        ? 'Correo enviado desde cuenta secundaria'
+        : 'Correo enviado desde cuenta secundaria, pero no se pudo registrar el log',
+      to: result.info.accepted,
+      messageId: result.info.messageId
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error enviando correo desde cuenta secundaria',
       error: error.message
@@ -119,13 +121,14 @@ const listarLogs = async (req, res) => {
     const logs = await EmailLogRp.findAll({
       order: [['fechaCreacion', 'DESC']]
     });
-    res.json({
+
+    return res.json({
       success: true,
       total: logs.length,
       data: logs
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error obteniendo logs',
       error: error.message
@@ -143,8 +146,8 @@ const buscarLogs = async (req, res) => {
     if (estado) where.estado = estado;
 
     if (desde && hasta) {
-      const startDate = new Date(`${desde}T00:00:00-05:00`); // inicio día en Lima
-      const endDate = new Date(`${hasta}T23:59:59-05:00`);   // fin día en Lima
+      const startDate = new Date(`${desde}T00:00:00-05:00`);
+      const endDate = new Date(`${hasta}T23:59:59-05:00`);
 
       where.fechaCreacion = {
         [Op.between]: [startDate, endDate]
@@ -156,13 +159,13 @@ const buscarLogs = async (req, res) => {
       order: [['fechaCreacion', 'DESC']]
     });
 
-    res.json({
+    return res.json({
       success: true,
       total: logs.length,
       data: logs
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error filtrando logs',
       error: error.message
@@ -170,4 +173,9 @@ const buscarLogs = async (req, res) => {
   }
 };
 
-module.exports = { enviarCorreoPrincipal, enviarCorreoSecundario, buscarLogs , listarLogs};
+module.exports = {
+  enviarCorreoPrincipal,
+  enviarCorreoSecundario,
+  buscarLogs,
+  listarLogs
+};

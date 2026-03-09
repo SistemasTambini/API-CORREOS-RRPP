@@ -405,7 +405,7 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 
   // 4. Trámite inscrito con devolución (constitución empresa) - VARIABLE(kardex,montoDevolucion)
   4: {
-    subject: (data) =>  `COMUNICACIÓN POR TRÁMITE INSCRITO CON DEVOLUCIÓN (CONSTITUCIÓN DE EMPRESA) - ${data.kardex || ''}`,
+    subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO CON DEVOLUCIÓN (CONSTITUCIÓN DE EMPRESA) - ${data.kardex || ''}`,
     html: (data) => `
 <!DOCTYPE html>
 <html lang="es">
@@ -694,158 +694,175 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
     `
   },
 
-  // 6. Trámite liquidado - variables(kardex,numerotitulo,montoDevolucion)
+  // 6. Trámite liquidado - variables(kardex,numeroTitulo,montoDevolucion,telefono)
   6: {
     subject: (data) => `COMUNICACIÓN POR TRÁMITE LIQUIDADO - ${data.kardex || ''}`,
-    html: (data) => `
+    html: (data) => {
+      const telefonoRaw = String(data.telefono || '').trim();
+      const telefonoDigits = telefonoRaw.replace(/\D/g, '');
+
+      let telefonoLink = '51977806351';
+      let telefonoTexto = '977 806 351';
+
+      if (telefonoDigits) {
+        if (telefonoDigits.length === 9) {
+          telefonoLink = `51${telefonoDigits}`;
+          telefonoTexto = telefonoDigits.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+        } else if (telefonoDigits.length === 11 && telefonoDigits.startsWith('51')) {
+          telefonoLink = telefonoDigits;
+          telefonoTexto = telefonoDigits.slice(2).replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+        }
+      }
+
+      return `
       <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Notaría Tambini – Trámite liquidado</title>
-</head>
-<body style="margin:0;padding:0;background:#F5F7FB;">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
-    <tr>
-      <td align="center" style="padding:24px 12px;">
+        <html lang="es">
+        <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Notaría Tambini – Trámite liquidado</title>
+        </head>
+        <body style="margin:0;padding:0;background:#F5F7FB;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
+            <tr>
+              <td align="center" style="padding:24px 12px;">
 
-        <!-- Card -->
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640"
-               style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:12px;overflow:hidden;">
-          
-          <!-- Header -->
-          <tr>
-            <td style="background:#0F172A;padding:18px 24px;">
-              <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
-                NOTARÍA TAMBINI
-              </div>
-            </td>
-          </tr>
+                <!-- Card -->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640"
+                      style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:12px;overflow:hidden;">
+                  
+                  <!-- Header -->
+                  <tr>
+                    <td style="background:#0F172A;padding:18px 24px;">
+                      <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
+                        NOTARÍA TAMBINI
+                      </div>
+                    </td>
+                  </tr>
 
-          <!-- Title -->
-          <tr>
-            <td style="padding:20px 24px 0 24px;">
-              <h1 style="margin:0 0 8px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:20px;line-height:1.3;color:#0F172A;">
-                Trámite liquidado
-              </h1>
-            </td>
-          </tr>
+                  <!-- Title -->
+                  <tr>
+                    <td style="padding:20px 24px 0 24px;">
+                      <h1 style="margin:0 0 8px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:20px;line-height:1.3;color:#0F172A;">
+                        Trámite liquidado
+                      </h1>
+                    </td>
+                  </tr>
 
-          <!-- Body -->
-          <tr>
-            <td style="padding:0 24px 8px 24px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
+                  <!-- Body -->
+                  <tr>
+                    <td style="padding:0 24px 8px 24px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
 
-              <p style="margin:0 0 12px 0;">Estimado(a) Señor(a):</p>
+                      <p style="margin:0 0 12px 0;">Estimado(a) Señor(a):</p>
 
-              <p style="margin:0 0 12px 0;">
-                Me es grato saludarlo(a) y mediante el presente informarle que el trámite realizado en 
-                <strong>NOTARÍA TAMBINI</strong>, bajo el 
-                <strong>${data.kardex || '……'}</strong> N.º 
-                <strong>${data.numeroTitulo || '………….'}</strong>, se encuentra 
-                <strong style="color:#15803D;">LIQUIDADO</strong>, siendo el monto del mayor derecho de 
-                <strong>S/. ${data.montoDevolucion || '0.00'}</strong>, por lo que ponemos a su disposición las cuentas de derechos registrales de NOTARÍA TAMBINI:
-              </p>
+                      <p style="margin:0 0 12px 0;">
+                        Me es grato saludarlo(a) y mediante el presente informarle que el trámite realizado en 
+                        <strong>NOTARÍA TAMBINI</strong>, bajo el 
+                        <strong>${data.kardex || '……'}</strong> N.º 
+                        <strong>${data.numeroTitulo || '………….'}</strong>, se encuentra 
+                        <strong style="color:#15803D;">LIQUIDADO</strong>, siendo el monto del mayor derecho de 
+                        <strong>S/. ${data.montoDevolucion || '0.00'}</strong>, por lo que ponemos a su disposición las cuentas de derechos registrales de NOTARÍA TAMBINI:
+                      </p>
 
-              <!-- Resumen -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
-                     style="margin:0 0 16px 0;background:#F8FAFC;border:1px solid #E6EAF0;border-radius:8px;">
-                <tr>
-                  <td style="padding:12px 14px;">
-                    <p style="margin:0 0 6px 0;font-size:13px;color:#64748B;">
-                      Resumen de liquidación
-                    </p>
-                    <p style="margin:0;font-size:14px;color:#0F172A;">
-                      Kárdex: <strong>${data.kardex || '……'}</strong> &nbsp;|&nbsp; Título N.º <strong>${data.numeroTitulo || '………….'}</strong><br/>
-                      Mayor derecho: <strong>S/. ${data.montoDevolucion || '0.00'}</strong>
-                    </p>
-                  </td>
-                </tr>
-              </table>
+                      <!-- Resumen -->
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                            style="margin:0 0 16px 0;background:#F8FAFC;border:1px solid #E6EAF0;border-radius:8px;">
+                        <tr>
+                          <td style="padding:12px 14px;">
+                            <p style="margin:0 0 6px 0;font-size:13px;color:#64748B;">
+                              Resumen de liquidación
+                            </p>
+                            <p style="margin:0;font-size:14px;color:#0F172A;">
+                              Kárdex: <strong>${data.kardex || '……'}</strong> &nbsp;|&nbsp; Título N.º <strong>${data.numeroTitulo || '………….'}</strong><br/>
+                              Mayor derecho: <strong>S/. ${data.montoDevolucion || '0.00'}</strong>
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
 
-              <!-- Cuentas -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
-                     style="margin:0 0 16px 0;border:1px solid #E6EAF0;border-radius:8px;">
-                <tr>
-                  <td style="padding:12px 14px;">
-                    <p style="margin:0 8px 10px 0;font-size:13px;font-weight:700;color:#0F172A;">Cuentas de derechos registrales</p>
+                      <!-- Cuentas -->
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                            style="margin:0 0 16px 0;border:1px solid #E6EAF0;border-radius:8px;">
+                        <tr>
+                          <td style="padding:12px 14px;">
+                            <p style="margin:0 8px 10px 0;font-size:13px;font-weight:700;color:#0F172A;">Cuentas de derechos registrales</p>
 
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
-                           style="border-collapse:collapse;font-size:13px;">
-                      <tr>
-                        <th align="left" style="padding:8px;border-bottom:1px solid #E6EAF0;color:#64748B;font-weight:600;">Banco</th>
-                        <th align="left" style="padding:8px;border-bottom:1px solid #E6EAF0;color:#64748B;font-weight:600;">Cuenta</th>
-                        <th align="left" style="padding:8px;border-bottom:1px solid #E6EAF0;color:#64748B;font-weight:600;">CCI</th>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">INTERBANK</td>
-                        <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">898 3163156603</td>
-                        <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">003 989 013163156603 44</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">BCP</td>
-                        <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">193 - 1151949 0 46</td>
-                        <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">002 193 001151949046 17 </td>
-                      </tr>
-                    </table>
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                                  style="border-collapse:collapse;font-size:13px;">
+                              <tr>
+                                <th align="left" style="padding:8px;border-bottom:1px solid #E6EAF0;color:#64748B;font-weight:600;">Banco</th>
+                                <th align="left" style="padding:8px;border-bottom:1px solid #E6EAF0;color:#64748B;font-weight:600;">Cuenta</th>
+                                <th align="left" style="padding:8px;border-bottom:1px solid #E6EAF0;color:#64748B;font-weight:600;">CCI</th>
+                              </tr>
+                              <tr>
+                                <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">INTERBANK</td>
+                                <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">898 3163156603</td>
+                                <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">003 989 013163156603 44</td>
+                              </tr>
+                              <tr>
+                                <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">BCP</td>
+                                <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">193 - 1151949 0 46</td>
+                                <td style="padding:8px;border-bottom:1px solid #F1F5F9;color:#0F172A;">002 193 001151949046 17 </td>
+                              </tr>
+                            </table>
 
-                    <p style="margin:12px 0 0 0;font-size:12px;color:#64748B;">
-                      Titular: <strong style="color:#0F172A;">${data.titular || 'NOTARÍA TAMBINI'}</strong>
-                    </p>
-                  </td>
-                </tr>
-              </table>
+                            <p style="margin:12px 0 0 0;font-size:12px;color:#64748B;">
+                              Titular: <strong style="color:#0F172A;">${data.titular || 'NOTARÍA TAMBINI'}</strong>
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
 
-              <p style="margin:0 0 12px 0;">
-                Le agradeceremos enviar la constancia del depósito indicando la fecha y hora, y comunicarse con el asesor legal que atendió su trámite.
-              </p>
+                      <p style="margin:0 0 12px 0;">
+                        Le agradeceremos enviar la constancia del depósito indicando la fecha y hora, y comunicarse con el asesor legal que atendió su trámite.
+                      </p>
 
-              <!-- CTA WhatsApp -->
-              <p style="margin:0 0 16px 0;">
-                <a href="https://wa.me/51977806351"
-                   style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;font-size:14px;font-weight:600;padding:10px 16px;border-radius:8px;">
-                   Enviar constancia por WhatsApp (977 806 351)
-                </a>
-              </p>
+                      <!-- CTA WhatsApp -->
+                      <p style="margin:0 0 16px 0;">
+                        <a href="https://wa.me/${telefonoLink}"
+                          style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;font-size:14px;font-weight:600;padding:10px 16px;border-radius:8px;">
+                          Enviar constancia por WhatsApp (${telefonoTexto})
+                        </a>
+                      </p>
 
-              <!-- Horario -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
-                     style="margin:0 0 16px 0;">
-                <tr>
-                  <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:8px;background:#F8FAFC;">
-                    <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#0F172A;">Horario de atención</p>
-                    <p style="margin:0;font-size:13px;line-height:20px;color:#0F172A;">
-                      Lunes a viernes: 8:00 a. m. – 6:00 p. m. (horario corrido)<br/>
-                      Sábados: 9:00 a. m. – 12:00 p. m.
-                    </p>
-                  </td>
-                </tr>
-              </table>
+                      <!-- Horario -->
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                            style="margin:0 0 16px 0;">
+                        <tr>
+                          <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:8px;background:#F8FAFC;">
+                            <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#0F172A;">Horario de atención</p>
+                            <p style="margin:0;font-size:13px;line-height:20px;color:#0F172A;">
+                              Lunes a viernes: 8:00 a. m. – 6:00 p. m. (horario corrido)<br/>
+                              Sábados: 9:00 a. m. – 12:00 p. m.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
 
-              <p style="margin:0 0 6px 0;">Atentamente,</p>
-              <p style="margin:0;font-weight:700;color:#0F4C81;">NOTARÍA TAMBINI</p>
-            </td>
-          </tr>
+                      <p style="margin:0 0 6px 0;">Atentamente,</p>
+                      <p style="margin:0;font-weight:700;color:#0F4C81;">NOTARÍA TAMBINI</p>
+                    </td>
+                  </tr>
 
-          <!-- Footer -->
-          <tr>
-            <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
-              <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
-                Este mensaje fue enviado automáticamente. Si recibió este correo por error, por favor ignórelo.
-              </p>
-            </td>
-          </tr>
+                  <!-- Footer -->
+                  <tr>
+                    <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
+                      <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
+                        Este mensaje fue enviado automáticamente. Si recibió este correo por error, por favor ignórelo.
+                      </p>
+                    </td>
+                  </tr>
 
-        </table>
-        <!-- /Card -->
+                </table>
+                <!-- /Card -->
 
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-
-    `
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+    `;
+    }
   },
 
   // 7. Trámite observado - variables (kardex,numeroTitulo)
