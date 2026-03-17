@@ -5,6 +5,27 @@ function shouldShowTestimonio(kardex) {
   return first === 'K';
 }
 
+// helper para normalizar telefono y usarlo en botones de WhatsApp
+function getWhatsappData(telefono) {
+  const telefonoRaw = String(telefono || '').trim();
+  const telefonoDigits = telefonoRaw.replace(/\D/g, '');
+
+  let telefonoLink = '51998152812';
+  let telefonoTexto = '998 152 812';
+
+  if (telefonoDigits) {
+    if (telefonoDigits.length === 9) {
+      telefonoLink = `51${telefonoDigits}`;
+      telefonoTexto = telefonoDigits.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+    } else if (telefonoDigits.length === 11 && telefonoDigits.startsWith('51')) {
+      telefonoLink = telefonoDigits;
+      telefonoTexto = telefonoDigits.slice(2).replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+    }
+  }
+
+  return { telefonoLink, telefonoTexto };
+}
+
 
 const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
   // 1. Trámite presentado VARIABLES(kardex,numeroTitulo,oficinaRegistral)
@@ -134,10 +155,13 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
     }
   },
 
-  // 2. Trámite inscrito con devolución VARIABLES(kardex,numeroTitulo,numeroDevolucion)
+  // 2. Trámite inscrito con devolución VARIABLES(kardex,numeroTitulo,oficinaRegistral,telefono)
   2: {
     subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO CON DEVOLUCIÓN - ${data.kardex || ''}`,
-    html: (data) => `
+    html: (data) => {
+      const { telefonoLink, telefonoTexto } = getWhatsappData(data.telefono);
+
+      return `
   <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -145,13 +169,10 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta http-equiv="x-ua-compatible" content="ie=edge" />
 <title>Notaría Tambini – Trámite inscrito</title>
-<!-- Preheader (texto de vista previa) -->
 <style>
-/* Nada de CSS externo por compatibilidad; todo va inline abajo */
 </style>
 </head>
 <body style="margin:0;padding:0;background:#F5F7FB;">
-  <!-- Preheader oculto -->
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
     Trámite inscrito en Notaría Tambini. Información y horarios dentro del mensaje.
   </div>
@@ -159,20 +180,16 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
     <tr>
       <td align="center" style="padding:24px 12px;">
-        <!-- Card -->
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:14px;overflow:hidden;box-shadow:0 2px 6px rgba(15,23,42,0.05);">
           
-          <!-- Header -->
           <tr>
             <td style="background:#03274A;padding:18px 24px;">
-              <!-- Reemplaza por <img> si tienes logo -->
               <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
                 NOTARÍA TAMBINI
               </div>
             </td>
           </tr>
 
-          <!-- Title + meta -->
           <tr>
             <td style="padding:22px 24px 0 24px;">
               <h1 style="margin:0 0 8px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:22px;line-height:1.35;color:#0F172A;">
@@ -186,7 +203,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Body -->
           <tr>
             <td style="padding:0 24px 8px 24px;">
               <p style="margin:0 0 12px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
@@ -201,7 +217,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 se encuentra <strong>INSCRITO</strong>.
               </p>
 
-              <!-- Info box -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 14px 0;background:#F8FAFC;border:1px solid #E6EAF0;border-radius:10px;">
                 <tr>
                   <td style="padding:12px 14px;">
@@ -220,24 +235,23 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 entrega de documentos a domicilio con tarifa especial.
               </p>
 
-              <!-- CTA (botón bulletproof con VML para Outlook) -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left" style="margin:0 0 18px 0;">
                 <tr>
                   <td align="left">
                     <!--[if mso]>
                     <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-                      href="https://wa.me/51977806351" style="height:40px;v-text-anchor:middle;width:280px;" arcsize="12%"
+                      href="https://wa.me/${telefonoLink}" style="height:40px;v-text-anchor:middle;width:280px;" arcsize="12%"
                       stroke="f" fillcolor="#25D366">
                       <w:anchorlock/>
                       <center style="color:#FFFFFF;font-family:Segoe UI,Arial,sans-serif;font-size:14px;font-weight:700;">
-                        Escribir por WhatsApp (977 806 351)
+                        Escribir por WhatsApp (${telefonoTexto})
                       </center>
                     </v:roundrect>
                     <![endif]-->
                     <!--[if !mso]><!-- -->
-                    <a href="https://wa.me/51977806351"
+                    <a href="https://wa.me/${telefonoLink}"
                        style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;padding:10px 16px;border-radius:8px;">
-                       Escribir por WhatsApp (977 806 351)
+                       Escribir por WhatsApp (${telefonoTexto})
                     </a>
                     <!--<![endif]-->
                   </td>
@@ -246,7 +260,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 
               <div style="clear:both;"></div>
 
-              <!-- Horario -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px 0;">
                 <tr>
                   <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:10px;">
@@ -271,7 +284,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
             <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
               <p style="margin:0 6px 6px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
@@ -283,20 +295,22 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
         </table>
-        <!-- /Card -->
       </td>
     </tr>
   </table>
 </body>
 </html>
-
-    `
+    `;
+    }
   },
 
-  // 3. Trámite inscrito -  VARIABLES(kardex,numeroTitulo)
+  // 3. Trámite inscrito -  VARIABLES(kardex,numeroTitulo,telefono)
   3: {
     subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO - ${data.kardex || ''}`,
-    html: (data) => `
+    html: (data) => {
+      const { telefonoLink, telefonoTexto } = getWhatsappData(data.telefono);
+
+      return `
       <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -308,10 +322,8 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
     <tr>
       <td align="center" style="padding:24px 12px;">
-        <!-- Card -->
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:12px;overflow:hidden;">
           
-          <!-- Header -->
           <tr>
             <td style="background:#03274A;padding:18px 24px;">
               <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
@@ -320,7 +332,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Title + meta -->
           <tr>
             <td style="padding:20px 24px 0 24px;">
               <h1 style="margin:0 0:8px 0;margin-bottom:8px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:20px;line-height:1.3;color:#0F172A;">
@@ -334,7 +345,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Body -->
           <tr>
             <td style="padding:0 24px 8px 24px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
 
@@ -350,18 +360,15 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 
               <p class="testimonio" style="margin:0 0 12px 0;">
                 No olvide recoger su testimonio dentro del horario de atención. Contamos con el servicio de entrega de documentos a domicilio con tarifa especial.
-                
               </p>
 
-              <!-- CTA WhatsApp -->
               <p style="margin:0 0 16px 0;">
-                <a href="https://wa.me/51977806351"
+                <a href="https://wa.me/${telefonoLink}"
                        style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;padding:10px 16px;border-radius:8px;">
-                       Escribir por WhatsApp (977 806 351)
+                       Escribir por WhatsApp (${telefonoTexto})
                     </a>
               </p>
 
-              <!-- Horario -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px 0;">
                 <tr>
                   <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:8px;background:#F8FAFC;">
@@ -383,7 +390,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
             <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
               <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
@@ -392,168 +398,154 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
         </table>
-        <!-- /Card -->
       </td>
     </tr>
   </table>
 </body>
 </html>
-
-
-    `
+    `;
+    }
   },
 
-  // 4. Trámite inscrito con devolución (constitución empresa) - VARIABLE(kardex,montoDevolucion)
+  // 4. Trámite inscrito con devolución (constitución empresa) - VARIABLE(kardex,montoDevolucion,telefono)
   4: {
     subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO CON DEVOLUCIÓN (CONSTITUCIÓN DE EMPRESA) - ${data.kardex || ''}`,
-    html: (data) => `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<meta http-equiv="x-ua-compatible" content="ie=edge" />
-<title>Notaría Tambini – Trámite inscrito</title>
-<!-- Preheader (texto de vista previa) -->
-<style>
-/* Nada de CSS externo por compatibilidad; todo va inline abajo */
-</style>
-</head>
-<body style="margin:0;padding:0;background:#F5F7FB;">
-  <!-- Preheader oculto -->
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
-    Trámite inscrito en Notaría Tambini. Información y horarios dentro del mensaje.
-  </div>
+    html: (data) => {
+      const { telefonoLink, telefonoTexto } = getWhatsappData(data.telefono);
 
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
-    <tr>
-      <td align="center" style="padding:24px 12px;">
-        <!-- Card -->
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:14px;overflow:hidden;box-shadow:0 2px 6px rgba(15,23,42,0.05);">
-          
-          <!-- Header -->
-          <tr>
-            <td style="background:#0F172A;padding:18px 24px;">
-              <!-- Reemplaza por <img> si tienes logo -->
-              <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
-                NOTARÍA TAMBINI
-              </div>
-            </td>
-          </tr>
+      return `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>Notaría Tambini – Trámite inscrito</title>
+        <style>
+        </style>
+        </head>
+        <body style="margin:0;padding:0;background:#F5F7FB;">
+          <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+            Trámite inscrito en Notaría Tambini. Información y horarios dentro del mensaje.
+          </div>
 
-          <!-- Title + meta -->
-          <tr>
-            <td style="padding:22px 24px 0 24px;">
-              <h1 style="margin:0 0 8px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:22px;line-height:1.35;color:#0F172A;">
-                Trámite Inscrito
-              </h1>
-              <p style="margin:0 0 14px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
-                Kárdex: <strong style="color:#0F172A;">${data.kardex || '.............................'}</strong>
-              </p>
-          </tr>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
+            <tr>
+              <td align="center" style="padding:24px 12px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:14px;overflow:hidden;box-shadow:0 2px 6px rgba(15,23,42,0.05);">
+                  
+                  <tr>
+                    <td style="background:#0F172A;padding:18px 24px;">
+                      <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
+                        NOTARÍA TAMBINI
+                      </div>
+                    </td>
+                  </tr>
 
-          <!-- Body -->
-          <tr>
-            <td style="padding:0 24px 8px 24px;">
-              <p style="margin:0 0 12px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
-                Estimado(a) Señor(a):
-              </p>
+                  <tr>
+                    <td style="padding:22px 24px 0 24px;">
+                      <h1 style="margin:0 0 8px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:22px;line-height:1.35;color:#0F172A;">
+                        Trámite Inscrito
+                      </h1>
+                      <p style="margin:0 0 14px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
+                        Kárdex: <strong style="color:#0F172A;">${data.kardex || '.............................'}</strong>
+                      </p>
+                  </tr>
 
-              <p style="margin:0 0 14px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
-                Me es grato saludarlo(a) e informarle que el trámite realizado en
-                <strong>NOTARÍA TAMBINI</strong>, bajo el Kárdex
-                <strong>${data.kardex || '.............................'}</strong>, se encuentra <strong>INSCRITO</strong>.
-              </p>
+                  <tr>
+                    <td style="padding:0 24px 8px 24px;">
+                      <p style="margin:0 0 12px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
+                        Estimado(a) Señor(a):
+                      </p>
 
-              <!-- Info box -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 14px 0;background:#F8FAFC;border:1px solid #E6EAF0;border-radius:10px;">
-                <tr>
-                  <td style="padding:12px 14px;">
-                    <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
-                    Asimismo, por el presente correo se adjunta INSCRIPCIÓN y RUC, tiene un monto por devolverse de la SUNARP la suma de <strong>S/${(data.montoDevolucion || '0.00')}</strong>.
-                      No olvidar que la devolución se efectúa en un plazo de <strong>30 días calendario</strong>,
-                      contados desde la solicitud correspondiente.
-                    </p>
-                  </td>
-                </tr>
-              </table>
+                      <p style="margin:0 0 14px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
+                        Me es grato saludarlo(a) e informarle que el trámite realizado en
+                        <strong>NOTARÍA TAMBINI</strong>, bajo el Kárdex
+                        <strong>${data.kardex || '.............................'}</strong>, se encuentra <strong>INSCRITO</strong>.
+                      </p>
 
-              <p class="testimonio" style="margin:0 0 16px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
-                No olvide recoger su testimonio dentro del horario de atención.
-              </p>
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 14px 0;background:#F8FAFC;border:1px solid #E6EAF0;border-radius:10px;">
+                        <tr>
+                          <td style="padding:12px 14px;">
+                            <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
+                            Asimismo, por el presente correo se adjunta INSCRIPCIÓN y RUC, tiene un monto por devolverse de la SUNARP la suma de <strong>S/${(data.montoDevolucion || '0.00')}</strong>.
+                              No olvidar que la devolución se efectúa en un plazo de <strong>30 días calendario</strong>,
+                              contados desde la solicitud correspondiente.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
 
-              <!-- CTA (botón bulletproof con VML para Outlook) -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left" style="margin:0 0 18px 0;">
-                <tr>
-                  <td align="left">
-           
-                    <!--[if !mso]><!-- -->
-                    <a href="https://wa.me/51977806351"
-                       style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;padding:10px 16px;border-radius:8px;">
-                       Escribir por WhatsApp (977 806 351)
-                    </a>
-                    <!--<![endif]-->
-                  </td>
-                </tr>
-              </table>
+                      <p class="testimonio" style="margin:0 0 16px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
+                        No olvide recoger su testimonio dentro del horario de atención.
+                      </p>
 
-              <div style="clear:both;"></div>
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left" style="margin:0 0 18px 0;">
+                        <tr>
+                          <td align="left">
+                            <a href="https://wa.me/${telefonoLink}"
+                              style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;padding:10px 16px;border-radius:8px;">
+                              Escribir por WhatsApp (${telefonoTexto})
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
 
-              <!-- Horario -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px 0;">
-                <tr>
-                  <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:10px;">
-                    <p style="margin:0 0 6px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:13px;letter-spacing:.3px;color:#0F172A;font-weight:700;">
-                      Horario de atención
-                    </p>
-                    <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#0F172A;">
-                      Lunes a viernes: 8:00 a. m. – 6:00 p. m. (horario corrido)<br />
-                      Sábados: 9:00 a. m. – 12:00 p. m.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-              
-<p style="margin:0 0 16px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;"><strong>RECUERDE CERTIFICAR LA APERTURA DE SUS LIBROS CONTABLES Y SOCIETARIOS</strong> (ACTAS Y MATRÍCULA DE ACCIONES), contamos con una tarifa especial y podrá hacerlo valer en el área Extraprotocolar.</p>
-              
+                      <div style="clear:both;"></div>
 
-              <p style="margin:0 0 12px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
-                Agradecemos la confianza depositada en nosotros y quedamos a su entera disposición para cualquier trámite notarial adicional.
-              </p>
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px 0;">
+                        <tr>
+                          <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:10px;">
+                            <p style="margin:0 0 6px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:13px;letter-spacing:.3px;color:#0F172A;font-weight:700;">
+                              Horario de atención
+                            </p>
+                            <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#0F172A;">
+                              Lunes a viernes: 8:00 a. m. – 6:00 p. m. (horario corrido)<br />
+                              Sábados: 9:00 a. m. – 12:00 p. m.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                      
+        <p style="margin:0 0 16px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;"><strong>RECUERDE CERTIFICAR LA APERTURA DE SUS LIBROS CONTABLES Y SOCIETARIOS</strong> (ACTAS Y MATRÍCULA DE ACCIONES), contamos con una tarifa especial y podrá hacerlo valer en el área Extraprotocolar.</p>
+                      
+                      <p style="margin:0 0 12px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
+                        Agradecemos la confianza depositada en nosotros y quedamos a su entera disposición para cualquier trámite notarial adicional.
+                      </p>
 
-              <p style="margin:0 0 8px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
-                Atentamente,<strong> Notaría Tambini.</strong>
-              </p>
-            </td>
-          </tr>
+                      <p style="margin:0 0 8px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
+                        Atentamente,<strong> Notaría Tambini.</strong>
+                      </p>
+                    </td>
+                  </tr>
 
-          <!-- Footer -->
-          <tr>
-            <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
-              <p style="margin:0 6px 6px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
-                Este mensaje fue enviado automáticamente. Si recibió este correo por error, por favor ignórelo.
-              </p>
-              <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
-                Av. Jorge Basadre 280, San Isidro – Lima • <a href="https://www.notariatambini.com" style="color:#0F172A;text-decoration:underline;">notariatambini.com</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-        <!-- /Card -->
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-
-    `
+                  <tr>
+                    <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
+                      <p style="margin:0 6px 6px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
+                        Este mensaje fue enviado automáticamente. Si recibió este correo por error, por favor ignórelo.
+                      </p>
+                      <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
+                        Av. Jorge Basadre 280, San Isidro – Lima • <a href="https://www.notariatambini.com" style="color:#0F172A;text-decoration:underline;">notariatambini.com</a>
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+    `;
+    }
   },
 
-  // 5. Trámite inscrito (constitución empresa) - variables (kardex)
+  // 5. Trámite inscrito (constitución empresa) - variables (kardex,telefono)
   5: {
     subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO (CONSTITUCIÓN DE EMPRESA) - ${data.kardex || ''}`,
-    html: (data) => `
-<!-- EN PRUEBA-->
+    html: (data) => {
+      const { telefonoLink, telefonoTexto } = getWhatsappData(data.telefono);
+
+      return `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -561,13 +553,10 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta http-equiv="x-ua-compatible" content="ie=edge" />
 <title>Notaría Tambini – Trámite inscrito</title>
-<!-- Preheader (texto de vista previa) -->
 <style>
-/* Nada de CSS externo por compatibilidad; todo va inline abajo */
 </style>
 </head>
 <body style="margin:0;padding:0;background:#F5F7FB;">
-  <!-- Preheader oculto -->
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
     Trámite inscrito en Notaría Tambini. Información y horarios dentro del mensaje.
   </div>
@@ -575,20 +564,16 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
     <tr>
       <td align="center" style="padding:24px 12px;">
-        <!-- Card -->
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:14px;overflow:hidden;box-shadow:0 2px 6px rgba(15,23,42,0.05);">
           
-          <!-- Header -->
           <tr>
             <td style="background:#0F172A;padding:18px 24px;">
-              <!-- Reemplaza por <img> si tienes logo -->
               <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
                 NOTARÍA TAMBINI
               </div>
             </td>
           </tr>
 
-          <!-- Title + meta -->
           <tr>
             <td style="padding:22px 24px 0 24px;">
               <h1 style="margin:0 0 8px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:22px;line-height:1.35;color:#0F172A;">
@@ -599,7 +584,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
               </p>
           </tr>
 
-          <!-- Body -->
           <tr>
             <td style="padding:0 24px 8px 24px;">
               <p style="margin:0 0 12px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
@@ -612,7 +596,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 <strong>${data.kardex || '.............................'}</strong>, se encuentra <strong>INSCRITO</strong>.
               </p>
 
-              <!-- Info box -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 14px 0;background:#F8FAFC;border:1px solid #E6EAF0;border-radius:10px;">
                 <tr>
                   <td style="padding:12px 14px;">
@@ -627,24 +610,19 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 No olvide recoger su testimonio dentro del horario de atención.
               </p>
 
-              <!-- CTA (botón bulletproof con VML para Outlook) -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left" style="margin:0 0 18px 0;">
                 <tr>
                   <td align="left">
-           
-                    <!--[if !mso]><!-- -->
-                    <a href="https://wa.me/51977806351"
+                    <a href="https://wa.me/${telefonoLink}"
                        style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;padding:10px 16px;border-radius:8px;">
-                       Escribir por WhatsApp (977 806 351)
+                       Escribir por WhatsApp (${telefonoTexto})
                     </a>
-                    <!--<![endif]-->
                   </td>
                 </tr>
               </table>
 
               <div style="clear:both;"></div>
 
-              <!-- Horario -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px 0;">
                 <tr>
                   <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:10px;">
@@ -661,7 +639,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
               
 <p style="margin:0 0 16px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;"><strong>RECUERDE CERTIFICAR LA APERTURA DE SUS LIBROS CONTABLES Y SOCIETARIOS</strong> (ACTAS Y MATRÍCULA DE ACCIONES), contamos con una tarifa especial y podrá hacerlo valer en el área Extraprotocolar.</p>
               
-
               <p style="margin:0 0 12px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
                 Agradecemos la confianza depositada en nosotros y quedamos a su entera disposición para cualquier trámite notarial adicional.
               </p>
@@ -672,7 +649,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
             <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
               <p style="margin:0 6px 6px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
@@ -684,14 +660,13 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
         </table>
-        <!-- /Card -->
       </td>
     </tr>
   </table>
 </body>
 </html>
-
-    `
+    `;
+    }
   },
 
   // 6. Trámite liquidado - variables(kardex,numeroTitulo,montoDevolucion,telefono)
@@ -865,10 +840,13 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
     }
   },
 
-  // 7. Trámite observado - variables (kardex,numeroTitulo)
+  // 7. Trámite observado - variables (kardex,numeroTitulo,montoDevolucion,telefono)
   7: {
     subject: (data) => `COMUNICACIÓN POR TRÁMITE OBSERVADO - ${data.kardex || ''}`,
-    html: (data) => `
+    html: (data) => {
+      const { telefonoLink, telefonoTexto } = getWhatsappData(data.telefono);
+
+      return `
       <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -881,11 +859,9 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
     <tr>
       <td align="center" style="padding:24px 12px;">
         
-        <!-- Card -->
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" 
                style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:12px;overflow:hidden;">
           
-          <!-- Header -->
           <tr>
             <td style="background:#0F172A;padding:18px 24px;">
               <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
@@ -895,7 +871,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Title -->
           <tr>
             <td style="padding:20px 24px 0 24px;">
               <h1 style="margin:0 0 8px 0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
@@ -905,7 +880,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Body -->
           <tr>
             <td style="padding:0 24px 8px 24px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
                        font-size:14px;line-height:22px;color:#0F172A;">
@@ -927,16 +901,14 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 Le agradeceremos ponerse en contacto con el asesor legal que lo atendió, a fin de subsanar la observación registral.
               </p>
 
-              <!-- CTA WhatsApp -->
               <p style="margin:0 0 16px 0;">
-                <a href="https://wa.me/51977806351"
+                <a href="https://wa.me/${telefonoLink}"
                    style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;
                           font-size:14px;font-weight:600;padding:10px 16px;border-radius:8px;">
-                   Contactar por WhatsApp (977 806 351)
+                   Contactar por WhatsApp (${telefonoTexto})
                 </a>
               </p>
 
-              <!-- Horario -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px 0;">
                 <tr>
                   <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:8px;background:#F8FAFC;">
@@ -954,7 +926,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
             <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
               <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;
@@ -965,15 +936,13 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
           </tr>
 
         </table>
-        <!-- /Card -->
-
       </td>
     </tr>
   </table>
 </body>
 </html>
-
-    `
+    `;
+    }
   },
 
   // 8. Trámite tachado - variables (kardex,numeroTitulo)
@@ -1185,10 +1154,13 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
 
   },
 
-  // 10. CASO SIMILAR AL 3. PERO PARA LOS V,N,L Y C 
+    // 10. CASO SIMILAR AL 3. PERO PARA LOS V,N,L Y C 
   10: {
     subject: (data) => `COMUNICACIÓN POR TRÁMITE INSCRITO - ${data.kardex || ''}`,
-    html: (data) => `
+    html: (data) => {
+      const { telefonoLink, telefonoTexto } = getWhatsappData(data.telefono);
+
+      return `
       <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1200,10 +1172,8 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#F5F7FB;">
     <tr>
       <td align="center" style="padding:24px 12px;">
-        <!-- Card -->
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" style="max-width:640px;background:#FFFFFF;border:1px solid #E6EAF0;border-radius:12px;overflow:hidden;">
           
-          <!-- Header -->
           <tr>
             <td style="background:#03274A;padding:18px 24px;">
               <div style="font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:.4px;">
@@ -1212,7 +1182,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Title + meta -->
           <tr>
             <td style="padding:20px 24px 0 24px;">
               <h1 style="margin:0 0:8px 0;margin-bottom:8px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:20px;line-height:1.3;color:#0F172A;">
@@ -1226,7 +1195,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Body -->
           <tr>
             <td style="padding:0 24px 8px 24px;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;color:#0F172A;">
 
@@ -1240,18 +1208,13 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
                 se encuentra <strong>INSCRITO</strong>.
               </p>
 
- 
-              </p>
-
-              <!-- CTA WhatsApp -->
               <p style="margin:0 0 16px 0;">
-                <a href="https://wa.me/51977806351"
+                <a href="https://wa.me/${telefonoLink}"
                        style="display:inline-block;text-decoration:none;background:#25D366;color:#FFFFFF;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;padding:10px 16px;border-radius:8px;">
-                       Escribir por WhatsApp (977 806 351)
+                       Escribir por WhatsApp (${telefonoTexto})
                     </a>
               </p>
 
-              <!-- Horario -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 16px 0;">
                 <tr>
                   <td style="padding:12px 14px;border:1px solid #E6EAF0;border-radius:8px;background:#F8FAFC;">
@@ -1273,7 +1236,6 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
             <td style="background:#F5F7FB;padding:14px 24px;text-align:center;">
               <p style="margin:0;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;">
@@ -1282,14 +1244,13 @@ const rrppTemplates = { //VARIABLES(kardex,numeroTitulo)
             </td>
           </tr>
         </table>
-        <!-- /Card -->
       </td>
     </tr>
   </table>
 </body>
 </html>
-    `
-
+    `;
+    }
   }
 };
 
