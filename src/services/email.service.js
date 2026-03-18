@@ -1,183 +1,89 @@
-const transporters = require('../config/transporter');
-const rrppTemplates = require('../helpers/rrpp.template');
-const reciboTemplates = require('../helpers/recibopago.template');
-const EmailLogRp = require('../models/EmailLogRp');
-const fs = require('fs');
-const path = require('path');
+/**
+ * EmailService — Orquestador
+ * Aplica el handler correcto (Strategy), construye adjuntos y mail,
+ * envía el correo y registra el log. Sin lógica de plantillas ni DB directa.
+ */
+const transporters     = require('../config/transporter');
+const { getHandler }   = require('../handlers/index');
+const attachmentBuilder = require('../builders/attachment.builder');
+const mailBuilder      = require('../builders/mail.builder');
+const emailLogRepo     = require('../repositories/emailLog.repository');
 
-function sanitizeFilename(name, i) {
-  const base = (name || `adjunto-${String(i + 1).padStart(2, '0')}.pdf`)
-    .replace(/[\\/:*?"<>|]/g, '_')
-    .trim();
-  return base || `adjunto-${String(i + 1).padStart(2, '0')}.pdf`;
-}
-
-function resolveTemplateCaseId(type, caseId, data = {}) {
-  const normalizedType = String(type || '').toLowerCase();
-  const normalizedCaseId = String(caseId || '').trim();
-
-  if (normalizedType !== 'rrpp') return normalizedCaseId;
-
-  // Si llega caseId=3 y el kardex empieza con V, N, C, T o L,
-  // realmente debe usar la plantilla 10
-  if (normalizedCaseId === '3') {
-    const kardex = String(data.kardex || '').trim().toUpperCase();
-
-    if (/^[VNCTL]/.test(kardex)) {
-      return '10';
-    }
-  }
-
-  return normalizedCaseId;
-}
-
-async function trySaveLog(payload) {
-  try {
-    await EmailLogRp.create(payload);
-    return { saved: true, error: null };
-  } catch (error) {
-    console.error('No se pudo guardar el log:', error.message);
-    return { saved: false, error: error.message };
-  }
-}
-
+/**
+ * Envía un correo y registra el resultado en la BD.
+ *
+ * @param {{ to, type, caseId, data, useAccount, subject, pdfs, cc, bcc, replyTo }} params
+ * @returns {Promise<{ info, logSaved: boolean, logError: string|null }>}
+ */
 async function sendEmail({
   to,
   type,
   caseId,
-  data = {},
+  data     = {},
   useAccount = 'main',
   subject,
-  pdf,
-  pdfs = [],
+  pdfs     = [],
   cc,
   bcc,
-  replyTo
+  replyTo,
 }) {
-  if (!to) throw new Error('Campo "to" es requerido');
+  if (!to)   throw new Error('Campo "to" es requerido');
   if (!type) throw new Error('Campo "type" es requerido');
 
-  let html;
-  let finalSubject = subject;
-  let finalCaseId = String(caseId || '').trim();
+  // --- Resolver plantilla mediante Strategy ---
+  const handler       = getHandler(type);
+  const finalCaseId   = handler.resolveCaseId(caseId, data);
+  const finalSubject  = handler.resolveSubject(finalCaseId, data, subject);
+  const html          = handler.resolveHtml(finalCaseId, data);
 
-  // --- Plantillas ---
-  if (type === 'rrpp') {
-    finalCaseId = resolveTemplateCaseId(type, caseId, data);
-
-    const template = rrppTemplates[finalCaseId];
-    if (!template) throw new Error(`CaseId ${finalCaseId} no reconocido para RRPP`);
-
-    finalSubject =
-      finalSubject ||
-      (typeof template.subject === 'function'
-        ? template.subject(data)
-        : template.subject);
-
-    html = template.html(data);
-  } else if (type === 'recibo') {
-    const clienteNombre =
-      data.cliente ??
-      data.nombreCliente ??
-      data.nombre ??
-      'Cliente';
-
-    finalSubject = finalSubject || 'COMPROBANTE DE PAGO - NOTARIA TAMBINI';
-    html = reciboTemplates.envioReciboPago(clienteNombre);
-  } else {
-    throw new Error(`Tipo de envío no reconocido: ${type}`);
-  }
-
-  // --- Normaliza adjuntos que vienen del request ---
-  if (pdf && !pdfs.length) pdfs = [pdf];
-
-  let attachments = (Array.isArray(pdfs) ? pdfs : [])
-    .filter(Boolean)
-    .map((f, i) => ({
-      filename: sanitizeFilename(f.originalname, i),
-      content: f.buffer,
-      contentType: f.mimetype || 'application/pdf',
-    }));
-
-  // --- Adjuntar devolucion.pdf si aplica ---
-  if (type === 'rrpp' && String(finalCaseId) === '2') {
-    const monto = Number(data.montoDevolucion || 0);
-
-    if (!Number.isNaN(monto) && monto >= 10) {
-      const devolucionPath = path.resolve(__dirname, '../files/devolucion.pdf');
-
-      try {
-        const buffer = await fs.promises.readFile(devolucionPath);
-
-        attachments.push({
-          filename: 'devolucion.pdf',
-          content: buffer,
-          contentType: 'application/pdf',
-        });
-      } catch (err) {
-        console.error('No se pudo adjuntar devolucion.pdf:', err.message);
-      }
-    }
-  }
+  // --- Construir adjuntos ---
+  const attachments = await attachmentBuilder.build({ pdfs, caseId: finalCaseId, data });
 
   // --- Cuenta SMTP ---
   const fromUser = process.env[`SMTP_USER_${useAccount.toUpperCase()}`];
-  if (!fromUser) throw new Error(`No se encontró SMTP_USER para la cuenta ${useAccount}`);
+  if (!fromUser) throw new Error(`No se encontró SMTP_USER para la cuenta "${useAccount}"`);
 
   const transporter = transporters[useAccount];
-  if (!transporter) throw new Error(`No existe transporter configurado para la cuenta ${useAccount}`);
+  if (!transporter) throw new Error(`No existe transporter configurado para la cuenta "${useAccount}"`);
 
-  // --- Opciones del correo ---
-  const mailOptions = {
-    from: fromUser,
-    to,
-    subject: finalSubject,
-    html,
-    ...(attachments.length ? { attachments } : {}),
-    ...(cc ? { cc } : {}),
-    ...(bcc ? { bcc } : {}),
-    ...(replyTo ? { replyTo } : {}),
-  };
+  // --- Construir opciones y enviar ---
+  const mailOptions = mailBuilder.build({ from: fromUser, to, cc, bcc, replyTo, subject: finalSubject, html, attachments });
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Correo enviado con ${useAccount}:`, info.messageId);
+    console.log(`✅ Correo enviado [${useAccount}]:`, info.messageId);
 
-    const logResult = await trySaveLog({
+    const logResult = await emailLogRepo.trySave({
       destinatario: to,
-      cc: cc || null,
-      bcc: bcc || null,
-      asunto: finalSubject,
-      tipo: type,
-      caseId: finalCaseId || null,
-      estado: 'SENT',
-      messageId: info.messageId,
-      cuenta: useAccount
+      cc:           cc  || null,
+      bcc:          bcc || null,
+      asunto:       finalSubject,
+      tipo:         type,
+      caseId:       finalCaseId || null,
+      estado:       'SENT',
+      messageId:    info.messageId,
+      cuenta:       useAccount,
     });
 
-    return {
-      info,
-      logSaved: logResult.saved,
-      logError: logResult.error
-    };
-  } catch (error) {
-    console.error(`Error enviando correo con ${useAccount}:`, error.message);
+    return { info, logSaved: logResult.saved, logError: logResult.error };
 
-    const logResult = await trySaveLog({
+  } catch (error) {
+    console.error(`❌ Error enviando correo [${useAccount}]:`, error.message);
+
+    const logResult = await emailLogRepo.trySave({
       destinatario: to || 'DESCONOCIDO',
-      cc: cc || null,
-      bcc: bcc || null,
-      asunto: finalSubject || subject || 'SIN ASUNTO',
-      tipo: type || 'DESCONOCIDO',
-      caseId: finalCaseId || null,
-      estado: 'FAILED',
+      cc:           cc  || null,
+      bcc:          bcc || null,
+      asunto:       finalSubject || subject || 'SIN ASUNTO',
+      tipo:         type || 'DESCONOCIDO',
+      caseId:       finalCaseId || null,
+      estado:       'FAILED',
       errorMensaje: error.message,
-      cuenta: useAccount
+      cuenta:       useAccount,
     });
 
     error.logSaved = logResult.saved;
     error.logError = logResult.error;
-
     throw error;
   }
 }
