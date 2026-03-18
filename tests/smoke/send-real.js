@@ -5,7 +5,7 @@
  *   node tests/smoke/send-real.js
  *
  * Qué hace:
- *   Envía 3 correos reales a amatu85@gmail.com:
+ *   Envía 3 correos reales a correo@gmail.com:
  *     1. RRPP case 1 (Trámite presentado) desde cuenta MAIN
  *     2. RRPP case 2 (Trámite inscrito con devolución) desde cuenta MAIN
  *     3. Recibo de pago desde cuenta SECOND
@@ -17,7 +17,7 @@ require('dotenv').config();
 
 const { sendEmail } = require('../../src/services/email.service');
 
-const DEST = 'amatu85@gmail.com';
+const DEST = 'correo@gmail.com';
 
 const tests = [
   {
