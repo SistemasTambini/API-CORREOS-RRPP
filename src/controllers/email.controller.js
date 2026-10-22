@@ -7,6 +7,7 @@ const { sendEmail }    = require('../services/email.service');
 const emailLogRepo     = require('../repositories/emailLog.repository');
 const { collectFiles } = require('../builders/attachment.builder');
 const { readRecipientsExcel, MAX_BULK_RECIPIENTS } = require('../helpers/readRecipientsExcel');
+const path = require('path');
 
 /**
  * Parsea el campo data (JSON string o objeto).
@@ -89,17 +90,26 @@ const buscarLogs = async (req, res) => {
 // Envío masivo desde Excel, secuencialmente y usando la cuenta secundaria.
 const enviarCorreoMasivo = async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ success: false, message: 'Adjunta un archivo Excel en el campo "file"' });
+    const excelFile = req.files?.file?.[0];
+    const imageFile = req.files?.image?.[0];
+    if (!excelFile) return res.status(400).json({ success: false, message: 'Adjunta un archivo Excel en el campo "file"' });
     const subject = String(req.body.subject || '').trim();
     const message = String(req.body.message || '').trim();
     if (!subject || !message) {
       return res.status(400).json({ success: false, message: 'Los campos "subject" y "message" son obligatorios' });
     }
 
-    const recipients = await readRecipientsExcel(req.file.buffer);
+    const recipients = await readRecipientsExcel(excelFile.buffer);
     if (recipients.length > MAX_BULK_RECIPIENTS) {
       return res.status(400).json({ success: false, message: `El máximo es ${MAX_BULK_RECIPIENTS} destinatarios por solicitud`, total: recipients.length });
     }
+
+    const extraAttachments = imageFile ? [{
+      filename: path.basename(imageFile.originalname).replace(/[\\/:*?"<>|]/g, '_') || 'imagen',
+      content: imageFile.buffer,
+      contentType: imageFile.mimetype,
+      contentDisposition: 'attachment',
+    }] : [];
 
     const results = [];
     for (const recipient of recipients) {
@@ -110,6 +120,7 @@ const enviarCorreoMasivo = async (req, res) => {
           data: { message },
           subject,
           useAccount: 'second',
+          extraAttachments,
         });
         results.push({ row: recipient.row, email: recipient.email, status: 'SENT', messageId: result.info.messageId, logSaved: result.logSaved });
       } catch (error) {

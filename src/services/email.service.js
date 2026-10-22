@@ -23,6 +23,7 @@ async function sendEmail({
   useAccount = 'main',
   subject,
   pdfs     = [],
+  extraAttachments = [],
   cc,
   bcc,
   replyTo,
@@ -37,7 +38,10 @@ async function sendEmail({
   const html          = handler.resolveHtml(finalCaseId, data);
 
   // --- Construir adjuntos ---
-  const attachments = await attachmentBuilder.build({ pdfs, caseId: finalCaseId, data });
+  const attachments = [
+    ...await attachmentBuilder.build({ pdfs, caseId: finalCaseId, data }),
+    ...extraAttachments,
+  ];
 
   // --- Cuenta SMTP ---
   const fromUser = process.env[`SMTP_USER_${useAccount.toUpperCase()}`];
