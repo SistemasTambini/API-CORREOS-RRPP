@@ -7,7 +7,11 @@ const router  = express.Router();
 
 const { uploadMiddleware, validatePdfFields } = require('../middlewares/upload.middleware');
 const { validateEmailPayload }               = require('../middlewares/validateEmailPayload');
-const { enviarCorreoPrincipal, enviarCorreoSecundario, listarLogs, buscarLogs } = require('../controllers/email.controller');
+const { bulkEmailUpload } = require('../middlewares/bulkEmailUpload.middleware');
+const { enviarCorreoPrincipal, enviarCorreoSecundario, listarLogs, buscarLogs, enviarCorreoMasivo } = require('../controllers/email.controller');
+
+// POST /api/email/send-bulk — usa la cuenta secundaria (boletas y facturas)
+router.post('/send-bulk', bulkEmailUpload, enviarCorreoMasivo);
 
 // POST  /api/email/send-main
 router.post('/send-main',   uploadMiddleware, validatePdfFields, validateEmailPayload, enviarCorreoPrincipal);

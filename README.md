@@ -259,6 +259,29 @@ Envía desde `registrospublicos@notariatambini.com`.
 
 Igual que `/send-main` pero usa `informes@notariatambini.com`. No admite `cc`.
 
+### POST `/send-bulk` — Envío secuencial desde Excel
+
+Envía un mismo mensaje a cada correo de la primera hoja de un archivo `.xlsx`, uno por uno, usando la cuenta secundaria (la misma de boletas y facturas). El envío continúa con los siguientes destinatarios si uno falla; el resultado individual se incluye en la respuesta y se registra en `email_log_rp`.
+
+**Content-Type:** `multipart/form-data`
+
+| Campo | Tipo | Requerido | Descripción |
+|---|---|---|---|
+| `file` | archivo `.xlsx` | ✅ | Excel con encabezado `correo` o `email` en la primera fila |
+| `subject` | string | ✅ | Asunto común de los mensajes |
+| `message` | string | ✅ | Mensaje común en texto plano |
+
+Máximo: 10 MB, 5000 filas/256 columnas y 500 destinatarios por solicitud. Las filas sin correo se omiten; si hay direcciones inválidas, se rechaza el archivo completo antes de enviar.
+
+```bash
+curl -X POST http://localhost:3015/api/email/send-bulk \
+  -F "file=@destinatarios.xlsx" \
+  -F "subject=Comunicado importante" \
+  -F "message=Hola, este es el mensaje que recibirán los destinatarios."
+```
+
+La respuesta incluye el total procesado, enviados, fallidos y el estado de cada fila. HTTP 207 indica que el lote terminó con al menos un fallo.
+
 ---
 
 ### GET `/logs` — Listar todos los registros

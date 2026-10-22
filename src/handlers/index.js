@@ -9,6 +9,7 @@ const { EMAIL_TYPES } = require('../constants/emailTypes');
 const handlers = {
   [EMAIL_TYPES.RRPP]:   require('./rrpp.handler'),
   [EMAIL_TYPES.RECIBO]: require('./recibo.handler'),
+  custom: require('./custom.handler'),
 };
 
 /**
