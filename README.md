@@ -270,7 +270,7 @@ Envía un mismo mensaje a cada correo de la primera hoja de un archivo `.xlsx`, 
 | `file` | archivo `.xlsx` | ✅ | Excel con encabezado `correo` o `email` en la primera fila |
 | `image` | archivo de imagen | ❌ | Imagen adjunta a cada correo: JPG, PNG, GIF o WEBP |
 | `subject` | string | ✅ | Asunto común de los mensajes |
-| `message` | string | ✅ | Mensaje común en texto plano |
+| `message` | string | ✅ | Mensaje común en texto plano; separa párrafos con una línea en blanco |
 
 Máximo: 10 MB por archivo, 5000 filas/256 columnas y 500 destinatarios por solicitud. Si se agrega `image`, se adjunta a cada correo. Las filas sin correo se omiten; si hay direcciones inválidas, se rechaza el archivo completo antes de enviar.
 
